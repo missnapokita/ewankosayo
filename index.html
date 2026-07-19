@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MasterKit JSON Admin</title>
+<style>
+:root{
+  --bg:#080808;
+  --panel:#111111;
+  --panel2:#171717;
+  --line:rgba(255,255,255,.085);
+  --text:#f5f5f5;
+  --muted:#929292;
+  --green:#F5B83D;
+  --green2:#C98A18;
+  --red:#E84C4C;
+  --yellow:#F5B83D;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#080808}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% -180px,rgba(245,184,61,.13),transparent 390px),
+    linear-gradient(180deg,#080808 0%,#0b0b0b 52%,#070707 100%);
+  letter-spacing:.01em;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+button,input,textarea,select{font-family:inherit}
+.app{width:min(1180px,94%);margin:auto;padding:18px 0 104px}
+.header{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:20;
+  margin:0 -10px 14px;padding:14px 10px;
+  background:linear-gradient(180deg,rgba(8,8,8,.96),rgba(8,8,8,.78),transparent);
+  backdrop-filter:blur(18px);
+}
+.brand h1{margin:0;font-size:25px;font-weight:900;letter-spacing:-.025em}
+.brand h1::first-letter{color:var(--green)}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.card{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.015)),
+    #111111;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.025);
+  backdrop-filter:blur(10px);
+}
+.card:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;width:100%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(245,184,61,.42),transparent);
+  opacity:.62;
+}
+.login{max-width:430px;margin:65px auto;padding:24px}
+.login:after{
+  content:"M";
+  position:absolute;right:-18px;top:-42px;
+  font-size:145px;line-height:1;font-weight:1000;
+  color:rgba(245,184,61,.045);pointer-events:none;
+}
+.login h1{margin:0 0 4px;font-size:26px;font-weight:900}
+label{
+  font-size:11px;color:#a4a4a4;display:block;margin:13px 0 7px;
+  font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+}
+input,textarea,select{
+  width:100%;
+  border:1px solid rgba(255,255,255,.09);
+  background:#0b0b0b;
+  color:#f5f5f5;
+  border-radius:12px;
+  padding:12px 13px;
+  outline:none;
+  font-size:14px;
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+input::placeholder,textarea::placeholder{color:#5f5f5f}
+textarea{min-height:85px;resize:vertical}
+input:focus,textarea:focus,select:focus{
+  border-color:rgba(245,184,61,.78);
+  background:#0e0e0e;
+  box-shadow:0 0 0 3px rgba(245,184,61,.105);
+}
+select option{color:#f5f5f5;background:#151515}
+.btn{
+  border:0;border-radius:12px;padding:11px 15px;
+  font-weight:800;cursor:pointer;
+  color:#171006;
+  background:linear-gradient(135deg,#ffd36c 0%,#f5b83d 48%,#c88718 100%);
+  box-shadow:0 8px 22px rgba(196,130,18,.18),inset 0 1px 0 rgba(255,255,255,.34);
+  transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+.btn:hover{filter:brightness(1.06);box-shadow:0 10px 26px rgba(196,130,18,.24),inset 0 1px 0 rgba(255,255,255,.38)}
+.btn:active{transform:scale(.975)}
+.btn2{background:#191919;color:#e8e8e8;border:1px solid rgba(255,255,255,.09);box-shadow:none}
+.btn2:hover{background:#202020;border-color:rgba(245,184,61,.24)}
+.btnRed{background:linear-gradient(135deg,#ff6868,#cb3737);color:#fff;box-shadow:none}
+.btnYellow{background:linear-gradient(135deg,#ffd36c,#e7a62f);color:#171006}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hidden{display:none!important}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.status{
+  white-space:pre-wrap;color:#c9c9c9;background:#0b0b0b;
+  border:1px solid rgba(255,255,255,.075);
+  border-left:3px solid var(--green);
+  border-radius:12px;padding:12px 13px;margin-top:12px;font-size:13px;
+}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{
+  position:relative;overflow:hidden;
+  padding:16px;border-radius:17px;
+  background:linear-gradient(145deg,#171717,#101010);
+  border:1px solid var(--line);
+}
+.stat:after{
+  content:"";position:absolute;width:68px;height:68px;right:-20px;bottom:-22px;
+  border-radius:50%;background:radial-gradient(circle,rgba(245,184,61,.19),transparent 67%);
+}
+.stat b{display:block;font-size:25px;color:#ffd064;font-weight:950;letter-spacing:-.04em}
+.stat span{font-size:12px;color:#8b8b8b;font-weight:700}
+.tabs{
+  display:flex;gap:8px;overflow:auto;padding:8px;
+  margin:14px 0;border-radius:17px;background:#101010;
+  border:1px solid var(--line);box-shadow:0 10px 26px rgba(0,0,0,.24);
+}
+.tab{
+  white-space:nowrap;border:1px solid transparent;
+  background:transparent;color:#aaa;
+  padding:10px 15px;border-radius:11px;cursor:pointer;font-weight:800;
+  transition:.18s ease;
+}
+.tab:hover{color:#f2f2f2;background:#181818}
+.tab.active{
+  background:linear-gradient(135deg,#ffd46d,#e8a62d);
+  color:#171006;border-color:rgba(255,215,126,.34);
+  box-shadow:0 7px 18px rgba(210,144,26,.18);
+}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}
+.searchRow{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:13px}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 10px}
+.sectionTitle h2{margin:0;font-size:19px;color:#f4f4f4;font-weight:900;letter-spacing:-.02em}
+.sectionTitle small{color:#888}
+.horizontal{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:12px;
+}
+.item{
+  position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.075);
+  background:#111111;border-radius:17px;
+  box-shadow:0 12px 28px rgba(0,0,0,.25);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.item:hover{transform:translateY(-3px);border-color:rgba(245,184,61,.28);box-shadow:0 17px 34px rgba(0,0,0,.34)}
+.thumb{
+  position:relative;
+  width:100%;aspect-ratio:3/4;height:auto;min-height:0;
+  background:linear-gradient(135deg,rgba(245,184,61,.035),transparent),#080808;
+  display:flex;align-items:center;justify-content:center;
+  color:#666;font-size:13px;border-bottom:1px solid rgba(255,255,255,.065);
+}
+.thumb:after{
+  content:"";position:absolute;inset:auto 0 0;height:38%;
+  pointer-events:none;background:linear-gradient(transparent,rgba(0,0,0,.42));
+}
+.thumb img{
+  width:100%;height:100%;object-fit:cover;object-position:center top;
+  transition:transform .28s ease;
+}
+.item:hover .thumb img{transform:scale(1.025)}
+.meta{padding:11px;background:linear-gradient(180deg,#121212,#0f0f0f)}
+.name1{font-weight:900;font-size:14px;line-height:1.25;word-break:break-word;color:#f2f2f2}
+.name2{font-size:12px;color:#8c8c8c;margin-top:5px;line-height:1.25;word-break:break-word}
+.itemBtns{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}
+.itemBtns button{width:100%;min-height:38px;padding:9px 8px;border-radius:12px;font-size:12px}
+.itemBtns .btn{box-shadow:none}
+.itemBtns .btn2{background:#1a1a1a}
+.itemBtns .btnRed{background:#3a1717;border:1px solid rgba(255,86,86,.18);color:#ff9a9a}
+.badge{
+  position:absolute;top:9px;left:9px;z-index:2;
+  background:rgba(8,8,8,.82);border:1px solid rgba(245,184,61,.28);
+  border-radius:999px;padding:5px 8px;font-size:10px;color:#f7d992;
+  box-shadow:0 4px 12px rgba(0,0,0,.32);backdrop-filter:blur(8px);
+}
+.bottomNav{
+  position:fixed;left:50%;bottom:12px;transform:translateX(-50%);
+  width:min(650px,94%);z-index:10;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  padding:8px;border-radius:19px;background:rgba(13,13,13,.94);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 18px 55px rgba(0,0,0,.55);
+  backdrop-filter:blur(14px);
+}
+.bottomNav:before{
+  content:"";position:absolute;left:22%;right:22%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,#f5b83d,transparent);opacity:.52;
+}
+.bottomNav button{
+  color:#858585;background:transparent;border:0;border-radius:12px;
+  padding:10px 4px;font-weight:800;font-size:12px;transition:.18s ease;
+}
+.bottomNav button:hover{color:#eee;background:#181818}
+.bottomNav button.active{background:rgba(245,184,61,.115);color:#ffd064}
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:99;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(8px);
+}
+.modalBox{
+  width:min(580px,100%);max-height:90vh;overflow:auto;
+  border-radius:21px;
+  background:linear-gradient(150deg,rgba(255,255,255,.035),transparent),#111111;
+  border:1px solid rgba(255,255,255,.10);padding:18px;
+  box-shadow:0 28px 100px rgba(0,0,0,.72);
+}
+.modalBox:before{
+  content:"";display:block;width:46px;height:4px;margin:-5px auto 13px;
+  border-radius:999px;background:#3b3b3b;
+}
+.preview{
+  height:180px;margin-top:12px;border-radius:15px;background:#090909;
+  border:1px solid rgba(255,255,255,.075);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;color:#666;
+}
+.preview img{width:100%;height:100%;object-fit:cover}
+.fieldHead{display:flex;justify-content:space-between;align-items:center}
+.removeField{font-size:11px;color:#e58585;cursor:pointer}
+.logs{
+  max-height:180px;overflow:auto;font-size:12px;color:#b9b9b9;
+  background:#090909;border:1px solid rgba(255,255,255,.07);
+  padding:12px;border-radius:15px;
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#0c0c0c}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#3b3120}
+@media(max-width:760px){
+  .grid3,.stats{grid-template-columns:1fr}
+  .header{align-items:flex-start;flex-direction:column;margin:0 -2px 10px;padding:12px 2px 10px}
+  .brand h1{font-size:22px}
+  .searchRow{grid-template-columns:1fr}
+  .app{width:min(100% - 22px,1180px);padding-top:8px}
+  .card{border-radius:17px;padding:15px}
+  .login{margin:38px auto;padding:20px}
+  .tabs{border-radius:15px}
+  .tab{padding:9px 13px}
+  .horizontal{grid-template-columns:repeat(3,1fr);gap:8px}
+  .meta{padding:8px}
+  .name1{font-size:11.5px;line-height:1.2;text-align:center}
+  .name2{font-size:10.5px;line-height:1.2;text-align:center}
+  .badge{font-size:8px;padding:4px 6px;top:6px;left:6px}
+  .item{border-radius:13px}
+  .thumb{border-radius:13px 13px 0 0}
+  .itemBtns{margin-top:7px}
+  .itemBtns button{min-height:33px;font-size:10.5px;padding:7px 5px;border-radius:9px}
+  .bottomNav{bottom:8px;width:calc(100% - 18px);border-radius:17px}
+}
+@media(max-width:390px){
+  .horizontal{grid-template-columns:repeat(2,1fr)}
+  .itemBtns button{font-size:11px;min-height:34px}
+}
+</style>
+</head>
+<body>
+
+<div id="loginPage" class="app">
+  <div class="card login">
+    <h1>Admin Login</h1>
+    <p style="color:var(--muted)">One-time login. Username at token ay mase-save sa browser.</p>
+
+    <label>GitHub Username / Owner</label>
+    <input id="username" placeholder="insert github username">
+
+    <label>GitHub Token</label>
+    <input id="token" type="password" placeholder="insert github token">
+
+    <button class="btn" style="width:100%;margin-top:16px" onclick="login()">Enter Dashboard</button>
+    <button class="btn btn2" style="width:100%;margin-top:10px" onclick="resetSaved()">Reset Saved Login</button>
+
+    <div class="status">Token permission: Contents Read/Write lang dapat sa repo mo.</div>
+  </div>
+</div>
+
+<div id="dashboard" class="app hidden">
+  <div class="header">
+    <div class="brand">
+      <h1>MasterKit Admin</h1>
+      <p id="welcome">Welcome, Admin!</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn2" onclick="loadJson()">Reload</button>
+      <button class="btn btn2" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Welcome, Admin!</h2>
+    <p style="color:var(--muted)">
+      Edit muna locally. Hindi pa makikita ng users hangga't hindi mo pinipindot ang Publish.
+    </p>
+
+    <div class="grid3">
+      <div>
+        <label>Repository</label>
+        <input id="repo" placeholder="example: masterkit">
+      </div>
+      <div>
+        <label>Branch</label>
+        <input id="branch" value="main">
+      </div>
+      <div>
+        <label>JSON Path</label>
+        <input id="path" placeholder="data/skins.json">
+      </div>
+    </div>
+
+    <div class="tools">
+      <button class="btn" onclick="loadJson()">Load JSON</button>
+      <button class="btn" onclick="publishJson()">Publish</button>
+      <button class="btn btn2" onclick="previewRaw()">Preview JSON</button>
+      <button class="btn btn2" onclick="downloadBackup()">Download Backup</button>
+      <button class="btn btn2" onclick="discardReload()">Discard / Reload</button>
+    </div>
+
+    <div class="status" id="status">Ready.</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setMode('auto',this)">Auto</button>
+    <button class="tab" onclick="setMode('heroes',this)">Heroes</button>
+    <button class="tab" onclick="setMode('upgrade',this)">Upgrade Skins</button>
+    <button class="tab" onclick="setMode('raw',this)">Raw / Other</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="totalCount">0</b><span>Total Items</span></div>
+    <div class="stat"><b id="typeText">Auto</b><span>Detected Type</span></div>
+    <div class="stat"><b id="changedText">0</b><span>Local Changes</span></div>
+  </div>
+
+  <div class="card">
+    <div class="sectionTitle">
+      <div>
+        <h2 id="managerTitle">Content Manager</h2>
+        <small id="managerDesc">Horizontal cards: image + name preview.</small>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="addItem()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="searchRow">
+      <input id="searchBox" oninput="renderList()" placeholder="Search all fields...">
+      <select id="statusFilter" onchange="renderList()">
+        <option value="">All Status</option>
+        <option value="enabled">Enabled / Visible</option>
+        <option value="disabled">Disabled / Hidden</option>
+      </select>
+    </div>
+
+    <div class="tools">
+      <button class="btn btn2" onclick="sortAZ()">Sort A-Z</button>
+      <button class="btn btn2" onclick="testVisibleImages()">Test Visible Images</button>
+      <button class="btn btn2" onclick="showLogs()">Show Logs</button>
+      <button class="btn btnRed" onclick="clearLocal()">Clear Local Draft</button>
+    </div>
+  </div>
+
+  <div class="sectionTitle">
+    <h2>All Items</h2>
+    <small id="listInfo">0 items</small>
+  </div>
+
+  <div id="list" class="horizontal"></div>
+
+  <div id="logsCard" class="card hidden" style="margin-top:16px">
+    <div class="sectionTitle">
+      <h2>Logs</h2>
+      <button class="btn btn2" onclick="logsCard.classList.add('hidden')">Hide</button>
+    </div>
+    <div id="logs" class="logs">No logs yet.</div>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modalBox">
+    <div class="sectionTitle" style="margin-top:0">
+      <h2 id="modalTitle">Edit Item</h2>
+      <button class="btn btn2" onclick="closeModal()">Close</button>
+    </div>
+
+    <div id="fields"></div>
+
+    <button class="btn btn2" style="margin-top:13px" onclick="addCustomField()">+ Add Custom Field</button>
+
+    <div class="preview" id="imgPreview">Image Preview</div>
+
+    <div class="actions" style="margin-top:15px">
+      <button class="btn" onclick="saveEdit()">Save Local</button>
+      <button class="btn btn2" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="rawModal" class="modal hidden">
+  <div class="modalBox">
+    <div class="sectionTitle" style="margin-top:0">
+      <h2>Preview JSON</h2>
+      <button class="btn btn2" onclick="rawModal.classList.add('hidden')">Close</button>
+    </div>
+    <textarea id="rawBox" style="min-height:360px"></textarea>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" onclick="applyRaw()">Apply Raw Locally</button>
+    </div>
+  </div>
+</div>
+
+<div class="bottomNav hidden" id="bottomNav">
+  <button class="active" onclick="scrollToTop()">Home</button>
+  <button onclick="setMode('heroes')">Heroes</button>
+  <button onclick="setMode('upgrade')">Upgrade</button>
+  <button onclick="publishJson()">Publish</button>
+</div>
+
+<script>
+let jsonData=[];
+let originalData=[];
+let fileSha="";
+let currentMode="auto";
+let editIndex=-1;
+let changes=0;
+let logLines=[];
+
+const $=id=>document.getElementById(id);
+
+function init(){
+  $("username").value=localStorage.getItem("gh_username")||"";
+  $("token").value=localStorage.getItem("gh_token")||"";
+  $("repo").value=localStorage.getItem("gh_repo")||"";
+  $("branch").value=localStorage.getItem("gh_branch")||"main";
+  $("path").value=localStorage.getItem("gh_path")||"";
+
+  const draft=localStorage.getItem("json_local_draft");
+  if(draft){
+    try{jsonData=JSON.parse(draft);originalData=JSON.parse(draft)}catch(e){}
+  }
+
+  if($("username").value && $("token").value){
+    showDashboard();
+    renderList();
+  }
+}
+init();
+
+function status(msg){$("status").textContent=msg}
+function log(msg){
+  const t=new Date().toLocaleTimeString();
+  logLines.unshift("["+t+"] "+msg);
+  $("logs").textContent=logLines.join("\n") || "No logs yet.";
+}
+function markChanged(){
+  changes++;
+  $("changedText").textContent=changes;
+  localStorage.setItem("json_local_draft",JSON.stringify(jsonData));
+}
+
+function login(){
+  if(!$("username").value.trim() || !$("token").value.trim()){
+    alert("Lagyan muna username at token.");
+    return;
+  }
+  localStorage.setItem("gh_username",$("username").value.trim());
+  localStorage.setItem("gh_token",$("token").value.trim());
+  showDashboard();
+}
+
+function showDashboard(){
+  $("loginPage").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+  $("bottomNav").classList.remove("hidden");
+  $("welcome").textContent="Logged in as @"+localStorage.getItem("gh_username");
+}
+
+function logout(){
+  localStorage.removeItem("gh_token");
+  $("dashboard").classList.add("hidden");
+  $("bottomNav").classList.add("hidden");
+  $("loginPage").classList.remove("hidden");
+}
+function resetSaved(){
+  localStorage.removeItem("gh_username");
+  localStorage.removeItem("gh_token");
+  $("username").value="";
+  $("token").value="";
+}
+function saveRepoInputs(){
+  localStorage.setItem("gh_repo",$("repo").value.trim());
+  localStorage.setItem("gh_branch",$("branch").value.trim()||"main");
+  localStorage.setItem("gh_path",$("path").value.trim());
+}
+function headers(){
+  return {
+    "Authorization":"Bearer "+localStorage.getItem("gh_token"),
+    "Accept":"application/vnd.github+json",
+    "X-GitHub-Api-Version":"2022-11-28"
+  };
+}
+function apiUrl(){
+  return `https://api.github.com/repos/${localStorage.getItem("gh_username")}/${$("repo").value.trim()}/contents/${$("path").value.trim()}`;
+}
+function decode64(str){
+  const bin=atob(str.replace(/\n/g,""));
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
+}
+function encode64(str){
+  const bytes=new TextEncoder().encode(str);
+  let bin="";
+  bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin);
+}
+
+async function loadJson(){
+  saveRepoInputs();
+  if(!$("repo").value.trim() || !$("path").value.trim()){
+    alert("Lagyan repo at JSON path.");
+    return;
+  }
+  status("Loading JSON...");
+  try{
+    const res=await fetch(apiUrl()+"?ref="+encodeURIComponent($("branch").value.trim()||"main"),{headers:headers()});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||"Load failed");
+
+    fileSha=data.sha;
+    const parsed=JSON.parse(decode64(data.content));
+
+    if(Array.isArray(parsed)) jsonData=parsed;
+    else if(parsed && typeof parsed==="object") jsonData=[parsed];
+    else throw new Error("JSON must be object or array.");
+
+    originalData=JSON.parse(JSON.stringify(jsonData));
+    changes=0;
+    $("changedText").textContent=changes;
+    localStorage.setItem("json_local_draft",JSON.stringify(jsonData));
+
+    renderList();
+    status("Loaded successfully. Items: "+jsonData.length);
+    log("Loaded "+jsonData.length+" items.");
+  }catch(e){
+    status("Error: "+e.message);
+    log("Load error: "+e.message);
+  }
+}
+
+async function publishJson(){
+  saveRepoInputs();
+  if(!$("repo").value.trim() || !$("path").value.trim()){
+    alert("Lagyan repo at JSON path.");
+    return;
+  }
+
+  status("Publishing to GitHub...");
+  try{
+    if(!fileSha){
+      status("Getting latest file SHA...");
+      const getRes = await fetch(apiUrl()+"?ref="+encodeURIComponent($("branch").value.trim()||"main"), {
+        headers: headers()
+      });
+      const getData = await getRes.json();
+
+      if(getRes.ok && getData.sha){
+        fileSha = getData.sha;
+      }else{
+        throw new Error(getData.message || "Cannot get file SHA. Check repo/path/branch.");
+      }
+    }
+
+    const body={
+      message:"Update JSON via Admin Panel",
+      content:encode64(JSON.stringify(jsonData,null,2)),
+      branch:$("branch").value.trim()||"main",
+      sha:fileSha
+    };
+
+    const res=await fetch(apiUrl(),{
+      method:"PUT",
+      headers:{...headers(),"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.message||"Publish failed");
+
+    fileSha=data.content.sha;
+    originalData=JSON.parse(JSON.stringify(jsonData));
+    changes=0;
+    $("changedText").textContent=changes;
+    localStorage.setItem("json_local_draft",JSON.stringify(jsonData));
+    status("Published successfully!");
+    log("Published changes.");
+  }catch(e){
+    status("Error: "+e.message);
+    log("Publish error: "+e.message);
+  }
+}
+
+function detectType(){
+  const sample=jsonData.find(x=>x&&typeof x==="object")||{};
+  if(currentMode==="heroes") return "heroes";
+  if(currentMode==="upgrade") return "upgrade";
+  if(currentMode==="raw") return "raw";
+  if("upgradable_skin" in sample) return "upgrade";
+  if("hero_name" in sample || "skin_name" in sample) return "heroes";
+  return "raw";
+}
+
+function imageOf(item){
+  return item.image || item.image_url || item.img || item.thumbnail || item.poster || item.icon || "";
+}
+function line1(item){
+  const type=detectType();
+  if(type==="upgrade") return item.upgradable_skin || item.upgrade_skin || item.name || "No upgrade_skin";
+  if(type==="heroes") return item.hero_name || item.name || item.title || "No name";
+  return item.name || item.title || item.hero_name || item.upgradable_skin || Object.values(item)[0] || "Item";
+}
+function line2(item){
+  const type=detectType();
+  if(type==="upgrade") return item.name || "";
+  if(type==="heroes") return item.skin_name || item.role || item.type || "";
+  return item.skin_name || item.category || item.type || "";
+}
+function itemStatus(item){
+  const v=String(item.enabled ?? item.visible ?? item.status ?? "").toLowerCase();
+  if(v==="false"||v==="disabled"||v==="hidden"||v==="0") return "disabled";
+  if(v==="true"||v==="enabled"||v==="visible"||v==="1") return "enabled";
+  return "";
+}
+function renderList(){
+  const q=($("searchBox")?.value||"").toLowerCase().trim();
+  const sf=($("statusFilter")?.value||"");
+  const type=detectType();
+
+  $("typeText").textContent=type==="upgrade"?"Upgrade":type==="heroes"?"Heroes":"Raw";
+  $("managerTitle").textContent=type==="upgrade"?"Upgrade Skin Manager":type==="heroes"?"Hero / Skin Manager":"Generic JSON Manager";
+  $("managerDesc").textContent=type==="upgrade"?"Structure: IMAGE + upgradable_skin + name":"Structure: IMAGE + name preview";
+  $("totalCount").textContent=jsonData.length;
+
+  let shown=0;
+  $("list").innerHTML="";
+
+  jsonData.forEach((item,i)=>{
+    const searchable=JSON.stringify(item).toLowerCase();
+    if(q && !searchable.includes(q)) return;
+    if(sf && itemStatus(item)!==sf) return;
+    shown++;
+
+    const img=imageOf(item);
+    const div=document.createElement("div");
+    div.className="item";
+    div.dataset.index=i;
+    div.innerHTML=`
+      <div class="badge">${type==="upgrade"?"UPGRADE":type==="heroes"?"HERO":"JSON"}</div>
+      <div class="thumb">${img?`<img src="${esc(img)}" onerror="this.parentElement.textContent='Image failed'">`:"No image"}</div>
+      <div class="meta">
+        <div class="name1">${esc(line1(item))}</div>
+        <div class="name2">${esc(line2(item))}</div>
+        <div class="itemBtns">
+          <button class="btn" onclick="openEdit(${i})">Edit</button>
+          <button class="btn btn2" onclick="copyItem(${i})">Copy</button>
+          <button class="btn btnRed" onclick="deleteItem(${i})">Delete</button>
+        </div>
+      </div>
+    `;
+    $("list").appendChild(div);
+  });
+
+  $("listInfo").textContent=shown+" shown / "+jsonData.length+" total";
+  if(!shown){
+    $("list").innerHTML=`<div class="card"><b>No items found</b><p style="color:var(--muted)">Try ibang search or Add item.</p></div>`;
+  }
+}
+
+function setMode(mode,btn){
+  currentMode=mode;
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  renderList();
+}
+
+function defaultItem(){
+  const type=detectType();
+  if(type==="upgrade") return {upgradable_skin:"",name:"",image:"",script:""};
+  if(type==="heroes") return {hero_name:"",skin_name:"",image:""};
+  return {name:"",image:""};
+}
+function addItem(){
+  jsonData.unshift(defaultItem());
+  markChanged();
+  renderList();
+  openEdit(0);
+}
+function deleteItem(i){
+  if(confirm("Delete this item?")){
+    jsonData.splice(i,1);
+    markChanged();
+    renderList();
+    log("Deleted item.");
+  }
+}
+
+function copyItem(i){
+  const original = jsonData[i];
+  if(!original) return;
+
+  const copied = JSON.parse(JSON.stringify(original));
+  jsonData.splice(i + 1, 0, copied);
+
+  markChanged();
+  renderList();
+  log("Copied item: " + line1(copied));
+}
+function openEdit(i){
+  editIndex=i;
+  const item=jsonData[i]||{};
+  const type=detectType();
+  $("modalTitle").textContent=type==="upgrade"?"Edit Upgrade Skin":type==="heroes"?"Edit Hero / Skin":"Edit JSON Item";
+  $("fields").innerHTML="";
+
+  let keys=Object.keys(item);
+  const priority=type==="upgrade"
+    ?["upgradable_skin","name","image","script"]
+    :type==="heroes"
+      ?["hero_name","skin_name","image"]
+      :["name","image"];
+
+  keys=[...priority.filter(k=>keys.includes(k)),...keys.filter(k=>!priority.includes(k))];
+  priority.forEach(k=>{ if(!(k in item)) keys.push(k); });
+  [...new Set(keys)].forEach(k=>addField(k,item[k]??""));
+
+  updatePreview();
+  $("modal").classList.remove("hidden");
+}
+function addField(key,value){
+  const wrap=document.createElement("div");
+  wrap.className="fieldWrap";
+  wrap.innerHTML=`
+    <div class="fieldHead">
+      <label>${esc(key)}: insert ${esc(key.replaceAll("_"," "))}</label>
+      <span class="removeField" onclick="this.closest('.fieldWrap').remove();updatePreview()">remove</span>
+    </div>
+    <input data-key="${esc(key)}" value="${esc(String(value))}" oninput="updatePreview()">
+  `;
+  $("fields").appendChild(wrap);
+}
+function addCustomField(){
+  const k=prompt("Field name? example: script");
+  if(k&&k.trim()) addField(k.trim(),"");
+}
+function updatePreview(){
+  const inputs=$("fields").querySelectorAll("input[data-key]");
+  let img="";
+  inputs.forEach(inp=>{
+    if(["image","image_url","img","thumbnail","poster","icon"].includes(inp.dataset.key.toLowerCase())){
+      img=inp.value.trim();
+    }
+  });
+  $("imgPreview").innerHTML=img?`<img src="${esc(img)}" onerror="this.parentElement.textContent='Image failed'">`:"Image Preview";
+}
+function saveEdit(){
+  const obj={};
+  $("fields").querySelectorAll("input[data-key]").forEach(inp=>{
+    obj[inp.dataset.key]=inp.value.trim();
+  });
+  jsonData[editIndex]=obj;
+  markChanged();
+  renderList();
+  closeModal();
+  log("Saved local edit.");
+}
+function closeModal(){$("modal").classList.add("hidden")}
+
+function sortAZ(){
+  jsonData.sort((a,b)=>String(line1(a)).localeCompare(String(line1(b))));
+  markChanged();renderList();log("Sorted A-Z.");
+}
+function previewRaw(){
+  $("rawBox").value=JSON.stringify(jsonData,null,2);
+  $("rawModal").classList.remove("hidden");
+}
+function applyRaw(){
+  try{
+    const parsed=JSON.parse($("rawBox").value);
+    jsonData=Array.isArray(parsed)?parsed:[parsed];
+    markChanged();renderList();
+    $("rawModal").classList.add("hidden");
+    log("Applied raw JSON locally.");
+  }catch(e){alert("Invalid JSON: "+e.message)}
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(jsonData,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=($("path").value.split("/").pop()||"backup.json");
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function discardReload(){
+  if(confirm("Discard local changes and reload from GitHub?")) loadJson();
+}
+function clearLocal(){
+  if(confirm("Clear local draft only?")){
+    localStorage.removeItem("json_local_draft");
+    changes=0;$("changedText").textContent=changes;
+    log("Cleared local draft.");
+  }
+}
+function showLogs(){$("logsCard").classList.toggle("hidden")}
+function scrollToTop(){window.scrollTo({top:0,behavior:"smooth"})}
+
+function testVisibleImages(){
+  const visible=[...document.querySelectorAll("#list .item")];
+  let ok=0,fail=0;
+  visible.forEach(card=>{
+    const img=card.querySelector("img");
+    if(!img) return;
+    if(img.complete && img.naturalWidth>0) ok++;
+    else fail++;
+  });
+  status(`Image tester result:\nOK: ${ok}\nNot loaded/failed: ${fail}`);
+  log("Tested visible images.");
+}
+function esc(s){
+  return String(s??"")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+</script>
+</body>
+</html>
